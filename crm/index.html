@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control CRM — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .login-wrap { width: 100%; max-width: 380px; }
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .logo h1 {
+      color: #8b5cf6;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    .logo small {
+      display: block;
+      margin-top: 0.25rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: #475569;
+    }
+    .card { padding: 2rem; }
+    .card h2 { margin-bottom: 1.5rem; font-size: 1rem; color: var(--muted); font-weight: 500; }
+    .btn-primary { width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem; }
+    #error-msg {
+      display: none;
+      background: #2d1515;
+      color: #f87171;
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #475569;
+    }
+    .footer-link a { color: #8b5cf6; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="logo">
+      <h1>Mission Control</h1>
+      <small>CRM — ZX LAB</small>
+    </div>
+
+    <div class="card">
+      <h2>Entre com sua conta</h2>
+
+      <div id="error-msg"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="seu@email.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" id="login-btn">
+          Entrar
+        </button>
+      </form>
+    </div>
+
+    <div class="footer-link">
+      <a href="https://zxlab.com.br" target="_blank">ZX LAB</a>
+    </div>
+  </div>
+
+  <script>
+    const { createClient } = supabase;
+    const cfg = window.SUPABASE_CONFIG || {};
+    const sb = createClient(cfg.url || '', cfg.anonKey || '');
+
+    // Redirecionar se ja logado
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.href = 'app.html';
+    });
+
+    const form = document.getElementById('login-form');
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('error-msg');
+
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+
+    function hideError() {
+      errEl.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        showError('Email ou senha incorretos. Verifique e tente novamente.');
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      } else {
+        window.location.href = 'app.html';
+      }
+    });
+  </script>
+</body>
+</html>

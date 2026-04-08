@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control — ZX LAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #8b5cf6; }
+    .meta { font-size: 0.8rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; }
+
+    /* Cards de semanas */
+    .weeks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .week-card {
+      background: #111118;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .week-card.active { border-color: #8b5cf6; }
+    .week-card.future { opacity: 0.4; }
+    .week-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b5cf6;
+      margin-bottom: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .week-card h2 { font-size: 1rem; color: #e2e8f0; margin-bottom: 0.75rem; }
+    .week-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: #4ade80; }
+    .dot-yellow { background: #facc15; }
+    .dot-gray { background: #334155; }
+    .week-items { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .week-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+    .week-item.done { color: #e2e8f0; }
+    .check { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* Modules grid */
+    .card {
+      background: #111118;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 0.95rem; font-weight: 600; color: #8b5cf6; margin-bottom: 1rem; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.6rem 0.75rem; text-align: left; font-size: 0.85rem; }
+    th { color: #64748b; font-weight: 500; border-bottom: 1px solid #1e1e2e; }
+    tr:not(:last-child) td { border-bottom: 1px solid #0d0d16; }
+    .step-num { color: #8b5cf6; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; width: 2rem; }
+
+    .badge { display: inline-block; padding: 0.12rem 0.5rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+    .badge-wait { background: #1a1a28; color: #64748b; }
+    .badge-ok { background: #052e16; color: #4ade80; }
+
+    .placeholder-text {
+      text-align: center;
+      padding: 2rem;
+      color: #475569;
+      font-size: 0.875rem;
+    }
+    .placeholder-text p { margin-top: 0.5rem; }
+
+    footer { margin-top: 3rem; text-align: center; color: #475569; font-size: 0.75rem; }
+    footer a { color: #8b5cf6; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .weeks-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Mission Control</h1>
+        <div class="meta">ZX LAB &nbsp;·&nbsp; Operacao IA</div>
+      </div>
+      <div class="meta" id="ts">Aguardando primeiro setup...</div>
+    </header>
+
+    <!-- Semanas -->
+    <div class="weeks-grid">
+      <!-- Semana 1 -->
+      <div class="week-card">
+        <div class="week-label">Semana 1</div>
+        <h2>Fundacao</h2>
+        <div class="week-status">
+          <div class="dot dot-yellow"></div>
+          <span>Aguardando dados</span>
+        </div>
+        <div class="week-items">
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            WhatsApp (Evolution API)
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Email (Resend)
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Agente IA
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Disparos programados
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Monitor diario
+          </div>
+        </div>
+      </div>
+
+      <!-- Semana 2 -->
+      <div class="week-card active">
+        <div class="week-label">Semana 2</div>
+        <h2>Robustez</h2>
+        <div class="week-status">
+          <div class="dot dot-yellow"></div>
+          <span>Setup em andamento</span>
+        </div>
+        <div class="week-items">
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            RTK (economia de tokens)
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            7 Skills profissionais
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Guardian 3 camadas
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Supabase na nuvem
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#334155" stroke-width="1.5"/></svg>
+            Mini-CRM Cloudflare
+          </div>
+        </div>
+      </div>
+
+      <!-- Semana 3 -->
+      <div class="week-card future">
+        <div class="week-label">Semana 3</div>
+        <h2>Automacao Avancada</h2>
+        <div class="week-status">
+          <div class="dot dot-gray"></div>
+          <span>Em breve</span>
+        </div>
+        <div class="week-items">
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Copy com IA
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Integracao Hotmart/Greenn
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Onboarding automatico
+          </div>
+        </div>
+      </div>
+
+      <!-- Semana 4 -->
+      <div class="week-card future">
+        <div class="week-label">Semana 4</div>
+        <h2>CRM com IA</h2>
+        <div class="week-status">
+          <div class="dot dot-gray"></div>
+          <span>Em breve</span>
+        </div>
+        <div class="week-items">
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Pipeline de vendas
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Scoring de leads
+          </div>
+          <div class="week-item">
+            <svg class="check" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1e293b" stroke-width="1.5"/></svg>
+            Relatorios automaticos
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modulos Semana 2 -->
+    <div class="card">
+      <h2>Modulos — Semana 2</h2>
+      <div class="placeholder-text">
+        <p>Execute a Semana 2 para ver o status de cada modulo aqui.</p>
+        <p style="margin-top:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem">cd ~/zx-control-semana2 &amp;&amp; claude</p>
+      </div>
+    </div>
+
+    <footer>
+      ZX LAB &nbsp;·&nbsp; <a href="https://zxlab.com.br" target="_blank">zxlab.com.br</a>
+    </footer>
+  </div>
+
+  <script>
+    // Atualiza timestamp
+    const ts = document.getElementById('ts');
+    if (ts) {
+      const now = new Date();
+      ts.textContent = now.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+  </script>
+</body>
+</html>

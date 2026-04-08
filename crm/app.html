@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="app.js"></script>
+  <style>
+    .layout { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+    header {
+      background: #0d0d16;
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .header-left { display: flex; align-items: center; gap: 1.5rem; }
+    .logo { font-size: 1rem; font-weight: 700; color: var(--purple); white-space: nowrap; }
+    .main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .toolbar h2 { font-size: 1rem; color: var(--muted); font-weight: 500; }
+    #search-input { max-width: 260px; }
+    .table-wrap { overflow-x: auto; }
+    .user-info { font-size: 0.8rem; color: var(--dim); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <div class="header-left">
+        <span class="logo">Mission Control CRM</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <span class="user-info" id="user-email"></span>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <h2>Contatos</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+          <input type="search" id="search-input" placeholder="Buscar nome, telefone, email..." />
+          <button class="btn btn-primary" onclick="openCreate()">+ Novo Contato</button>
+        </div>
+      </div>
+
+      <!-- Tabela -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Tags</th>
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+        </div>
+        <div id="contacts-empty" class="empty" style="display:none">
+          <div style="font-size:2rem">📋</div>
+          <p>Nenhum contato encontrado.</p>
+          <p>Clique em "+ Novo Contato" para adicionar.</p>
+        </div>
+      </div>
+
+      <!-- Paginacao -->
+      <div id="pagination" class="pagination"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Contato -->
+  <div class="modal-overlay" id="contact-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Novo Contato</h2>
+        <button class="modal-close" onclick="closeModal('contact-modal')">&times;</button>
+      </div>
+      <form id="contact-form" onsubmit="event.preventDefault(); saveContact()">
+        <div class="form-group">
+          <label for="f-name">Nome</label>
+          <input type="text" id="f-name" placeholder="Nome do contato" />
+        </div>
+        <div class="form-group">
+          <label for="f-phone">Telefone *</label>
+          <input type="tel" id="f-phone" placeholder="5511999999999" required />
+        </div>
+        <div class="form-group">
+          <label for="f-email">Email</label>
+          <input type="email" id="f-email" placeholder="email@exemplo.com" />
+        </div>
+        <div class="form-group">
+          <label for="f-status">Status</label>
+          <select id="f-status">
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+            <option value="blocked">Bloqueado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-tags">Tags (separadas por virgula)</label>
+          <input type="text" id="f-tags" placeholder="lead, cliente, vip" />
+        </div>
+        <div class="form-group">
+          <label for="f-notes">Notas</label>
+          <textarea id="f-notes" rows="3" placeholder="Observacoes sobre o contato..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('contact-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+</body>
+</html>
