@@ -6,6 +6,24 @@
 
 ---
 
+## Pré-requisitos
+
+Antes de começar, você vai precisar de:
+
+- **Claude Code** instalado ([instalação](https://docs.anthropic.com/pt/))
+- **Python 3.10+** (`python3 --version`)
+- **Node.js + wrangler** — `npm install -g wrangler && wrangler login`
+- **Conta Supabase** (gratuita) — obtenha URL + anon key em: Settings → API
+- **Conta Cloudflare** (gratuita) — obtenha Account ID + API Token em: My Profile → API Tokens
+
+### Fluxo de instalação
+
+```
+Pré-req → Clone → Supabase → Cloudflare → Deploy → Smoke test → Login
+```
+
+---
+
 ## O que você vai ter no final
 
 | O que | Detalhe |
@@ -138,3 +156,29 @@ A Semana 1 configura WhatsApp, Email, Agente IA e Monitor — a fundação que a
 ## Precisa de ajuda?
 
 Acesse o grupo do ZX Control ou abra uma issue neste repositório.
+
+---
+
+## Troubleshooting
+
+### Login não funciona / tela branca
+**Causa:** `config.js` não foi gerado ou não carregou.
+**Fix:** Re-execute `python3 setup/setup_crm.py`. Se já existe `crm/config.js`, verifique se o wrangler fez deploy da versão atualizada.
+
+### Erro 42501 (permission denied)
+**Causa:** RLS bloqueando operação.
+**Fix:** Verifique se executou `sql/001_init.sql` no SQL Editor do Supabase. As políticas `authenticated_all_*` devem estar ativas.
+
+### Enum inválido / status rejeitado
+**Causa:** Versão antiga do SQL usava `DEFAULT 'active'` que não existe no enum atual.
+**Fix:** Re-execute `sql/001_init.sql` no Supabase SQL Editor.
+
+### wrangler: project not found
+**Causa:** O projeto Pages ainda não existe no Cloudflare.
+**Fix:** Crie manualmente em Cloudflare Dashboard → Workers & Pages → Create, ou rode `setup_crm.py` pela primeira vez sem `--reconfigure`.
+
+### wrangler: command not found
+**Fix:** `npm install -g wrangler && wrangler login`
+
+### Setup pede credenciais mesmo já configuradas
+**Fix normal:** O setup detecta automaticamente. Se quiser forçar reconfiguração: `python3 setup/setup_crm.py --reconfigure`

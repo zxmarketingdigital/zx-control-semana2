@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   phone text UNIQUE NOT NULL,
   email text,
   tags text[],
-  status text DEFAULT 'active',
+  status text DEFAULT 'new',
   source text DEFAULT 'import',
   notes text,
   created_at timestamptz DEFAULT now(),

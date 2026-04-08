@@ -5,6 +5,15 @@ const { createClient } = supabase;
 const cfg = window.SUPABASE_CONFIG || {};
 const sb = createClient(cfg.url || '', cfg.anonKey || '');
 
+// Validacao de config no boot
+if (!cfg.url || !cfg.anonKey) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const t = document.getElementById('toast');
+    if (t) { t.textContent = '⚠️ config.js não carregado — reexecute o setup'; t.className = 'toast error show'; }
+    console.error('[CRM] SUPABASE_CONFIG ausente. Execute setup_crm.py para gerar config.js.');
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Estado
 // ---------------------------------------------------------------------------
@@ -55,7 +64,7 @@ async function fetchContacts() {
   query = query.order('created_at', { ascending: false }).range(from, to);
 
   const { data, error, count } = await query;
-  if (error) { toast('Erro ao carregar contatos', 'error'); return; }
+  if (error) { console.error('fetchContacts error:', error); toast(`Erro ao carregar: ${error.message}`, 'error'); return; }
   state.contacts = data || [];
   state.total = count || 0;
   renderContacts();
@@ -63,21 +72,39 @@ async function fetchContacts() {
 
 async function createContact(payload) {
   const { error } = await sb.from('contacts').insert(payload);
-  if (error) { toast('Erro ao criar contato', 'error'); return false; }
+  if (error) {
+    console.error('createContact error:', error);
+    let msg = error.message;
+    if (error.code === '23505') {
+      if (error.message.includes('email')) msg = 'Este email ja esta cadastrado em outro contato';
+      else if (error.message.includes('phone')) msg = 'Este telefone ja esta cadastrado em outro contato';
+      else msg = 'Contato duplicado — ja existe um registro com esses dados';
+    }
+    toast(`Erro ao criar: ${msg}`, 'error');
+    return false;
+  }
   toast('Contato criado!');
   return true;
 }
 
 async function updateContact(id, payload) {
   const { error } = await sb.from('contacts').update(payload).eq('id', id);
-  if (error) { toast('Erro ao atualizar', 'error'); return false; }
+  if (error) {
+    console.error('updateContact error:', error);
+    toast(`Erro ao atualizar: ${error.message}`, 'error');
+    return false;
+  }
   toast('Contato atualizado!');
   return true;
 }
 
 async function deleteContact(id) {
   const { error } = await sb.from('contacts').delete().eq('id', id);
-  if (error) { toast('Erro ao deletar', 'error'); return false; }
+  if (error) {
+    console.error('deleteContact error:', error);
+    toast(`Erro ao deletar: ${error.message}`, 'error');
+    return false;
+  }
   toast('Contato removido');
   return true;
 }
@@ -86,9 +113,9 @@ async function deleteContact(id) {
 // Render
 // ---------------------------------------------------------------------------
 function statusBadge(status) {
-  const map = { active: 'badge-green', inactive: 'badge-yellow', blocked: 'badge-red' };
+  const map = { converted: 'badge-green', closed_won: 'badge-green', interested: 'badge-green', contacted: 'badge-yellow', new: 'badge-yellow', meeting_scheduled: 'badge-yellow', not_interested: 'badge-red', closed_lost: 'badge-red', sem_contato: 'badge-purple', prospecting: 'badge-purple', client_worked: 'badge-purple' };
   const cls = map[status] || 'badge-purple';
-  return `<span class="badge ${cls}">${status || 'active'}</span>`;
+  return `<span class="badge ${cls}">${status || 'sem_contato'}</span>`;
 }
 
 function renderContacts() {
@@ -157,20 +184,23 @@ async function openEdit(id) {
   document.getElementById('f-name').value = contact.name || '';
   document.getElementById('f-phone').value = contact.phone || '';
   document.getElementById('f-email').value = contact.email || '';
-  document.getElementById('f-status').value = contact.status || 'active';
+  document.getElementById('f-status').value = contact.status || 'new';
   document.getElementById('f-tags').value = (contact.tags || []).join(', ');
   document.getElementById('f-notes').value = contact.notes || '';
   openModal('contact-modal');
 }
 
 async function saveContact() {
+  const phone = document.getElementById('f-phone').value.trim().replace(/\D/g, '');
+  const nameRaw = document.getElementById('f-name').value.trim();
+  if (!nameRaw) { toast('Nome é obrigatório', 'error'); return; }
   const payload = {
-    name: document.getElementById('f-name').value.trim(),
-    phone: document.getElementById('f-phone').value.trim().replace(/\D/g, ''),
-    email: document.getElementById('f-email').value.trim(),
+    name: nameRaw,
+    phone: phone,
+    email: document.getElementById('f-email').value.trim() || null,
     status: document.getElementById('f-status').value,
     tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean),
-    notes: document.getElementById('f-notes').value.trim(),
+    notes: document.getElementById('f-notes').value.trim() || null,
   };
 
   if (!payload.phone) { toast('Telefone obrigatorio', 'error'); return; }

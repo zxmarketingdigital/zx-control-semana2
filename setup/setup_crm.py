@@ -29,25 +29,17 @@ def ask(prompt, default=""):
         sys.exit(0)
 
 
-def inject_supabase_config(supabase_url, supabase_anon_key, deploy_dir):
-    """Injeta as credenciais no app.js via window.SUPABASE_CONFIG."""
-    app_js = deploy_dir / "app.js"
-    if not app_js.exists():
-        return False, "app.js nao encontrado"
-
-    content = app_js.read_text(encoding="utf-8")
-    config_block = f"""// Configuracao injetada pelo setup
+def generate_config_js(supabase_url, supabase_anon_key, deploy_dir):
+    """Gera config.js com as credenciais Supabase."""
+    config_js = deploy_dir / "config.js"
+    content = f"""// Configuracao Supabase — gerada pelo setup ZX Control Semana 2
 window.SUPABASE_CONFIG = {{
   url: "{supabase_url}",
   anonKey: "{supabase_anon_key}"
 }};
-
 """
-    # Adiciona no topo do arquivo se nao existir
-    if "window.SUPABASE_CONFIG" not in content:
-        content = config_block + content
-        app_js.write_text(content, encoding="utf-8")
-    return True, "Credenciais injetadas"
+    config_js.write_text(content, encoding="utf-8")
+    return True, "config.js gerado"
 
 
 def deploy_wrangler(deploy_dir, project_name):
@@ -82,6 +74,8 @@ def main():
     print("  e gerenciar seus contatos — publicada no Cloudflare (gratis).")
     print()
 
+    reconfigure = "--reconfigure" in sys.argv
+
     try:
         config = load_config()
     except FileNotFoundError:
@@ -90,10 +84,15 @@ def main():
     supabase_url = config.get("supabase_url", "")
     supabase_anon_key = config.get("supabase_anon_key", "")
 
-    if not supabase_url or not supabase_anon_key:
-        print("  ⚠️  Supabase nao configurado. Execute a Etapa 5 primeiro.")
-        print("  Se quiser pular esta etapa, pressione Ctrl+C.")
-        print()
+    if supabase_url and supabase_anon_key and not reconfigure:
+        print("  ✅ Credenciais Supabase encontradas no config — reutilizando")
+    else:
+        if not supabase_url or not supabase_anon_key:
+            print("  ⚠️  Supabase nao configurado. Execute a Etapa 5 primeiro.")
+            print("  Se quiser pular esta etapa, pressione Ctrl+C.")
+            print()
+        supabase_url = ask("SUPABASE_URL", default=supabase_url)
+        supabase_anon_key = ask("SUPABASE_ANON_KEY", default=supabase_anon_key)
 
     # Coletar dados Cloudflare
     print("  Voce vai precisar de:")
@@ -120,6 +119,12 @@ def main():
     print()
     print(f"  Preparando deploy do CRM como '{project_name}'...")
 
+    # Verificar wrangler antes de rodar
+    if not shutil.which("wrangler") and not shutil.which("npx"):
+        print("  ❌ wrangler não encontrado. Instale com: npm install -g wrangler")
+        print("  Depois rode: wrangler login")
+        return
+
     # Copiar CRM para dir temporario de deploy
     import tempfile
     deploy_ok = False
@@ -127,9 +132,9 @@ def main():
         deploy_dir = Path(tmp) / "crm"
         shutil.copytree(str(CRM_DIR), str(deploy_dir))
 
-        # Injetar credenciais
+        # Gerar config.js com credenciais
         if supabase_url and supabase_anon_key:
-            ok, msg = inject_supabase_config(supabase_url, supabase_anon_key, deploy_dir)
+            ok, msg = generate_config_js(supabase_url, supabase_anon_key, deploy_dir)
             print(f"  {'✅' if ok else '⚠️ '} {msg}")
 
         # Deploy
@@ -155,6 +160,18 @@ def main():
             crm_url = url_match.group(0) if url_match else f"https://{project_name}.pages.dev"
             print(f"  ✅ CRM publicado!")
             print(f"  URL: {crm_url}")
+
+            # Smoke test: verifica se config.js foi servido corretamente
+            import urllib.request
+            try:
+                with urllib.request.urlopen(f"{crm_url}/config.js", timeout=10) as r:
+                    body = r.read().decode()
+                    if "SUPABASE_CONFIG" in body:
+                        print("  ✅ Smoke test: config.js acessível e correto")
+                    else:
+                        print("  ⚠️  Smoke test: config.js servido mas sem SUPABASE_CONFIG")
+            except Exception as e:
+                print(f"  ⚠️  Smoke test: {e} (pode levar alguns minutos para propagar)")
 
             config["cloudflare_account_id"] = cf_account_id
             config["crm_project_name"] = project_name
