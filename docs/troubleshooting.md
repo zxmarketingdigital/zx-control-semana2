@@ -8,17 +8,23 @@
 
 **Sintoma:** `which rtk` retorna vazio.
 
-**Causa:** cargo nao estava disponivel e o download do binario falhou.
+**Causa:** Homebrew nao estava disponivel ou a instalacao foi pulada.
+
+> **Atencao:** o RTK correto e o CLI proxy de economia de tokens
+> (homepage https://www.rtk-ai.app/), distribuido **apenas via Homebrew**.
+> NUNCA use `cargo install rtk` — esse e outro pacote homonimo ("Rust Type
+> Kit"), que instala um binario errado no PATH.
 
 **Fix:**
 ```bash
-# Opcao 1: instalar via cargo
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo install rtk
-
-# Opcao 2: instalar Homebrew (se nao tiver)
+# 1. Instale o Homebrew (se ainda nao tiver)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Instale o RTK
 brew install rtk
+
+# 3. Configure o hook do Claude Code (o proprio RTK grava o hook correto)
+rtk init --global
 ```
 
 ---

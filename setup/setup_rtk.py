@@ -2,9 +2,13 @@
 """
 Etapa 2 — RTK + Hooks
 Verifica, instala e configura o RTK (token optimizer) para Claude Code.
+
+RTK correto = CLI proxy de economia de tokens, distribuido via Homebrew
+(`brew install rtk`, homepage https://www.rtk-ai.app/).
+NUNCA usar `cargo install rtk` (crate diferente — "Rust Type Kit").
+O hook do Claude Code e instalado pelo proprio RTK via `rtk init`.
 """
 
-import json
 import shutil
 import subprocess
 import sys
@@ -16,83 +20,64 @@ sys.path.insert(0, str(ROOT_DIR / "scripts"))
 
 from lib import load_config, mark_checkpoint, save_config
 
-SETTINGS_PATH = Path.home() / ".claude" / "settings.json"
-RTK_HOOK_CMD = "rtk"
+RTK_HOMEPAGE = "https://www.rtk-ai.app/"
 
 
 def is_rtk_installed():
     return shutil.which("rtk") is not None
 
 
-def install_rtk_cargo():
-    """Tenta instalar via cargo."""
-    print("  Instalando RTK via cargo (pode demorar alguns minutos)...")
-    result = subprocess.run(
-        ["cargo", "install", "rtk"],
-        capture_output=True, text=True, timeout=300
-    )
-    return result.returncode == 0, result.stderr
-
-
-def install_rtk_binary():
-    """Tenta baixar binario pre-compilado do GitHub releases."""
-    import platform
-    import urllib.request
-
-    system = platform.system().lower()
-    arch = platform.machine().lower()
-
-    # Mapeia para nomes de release
-    if system == "darwin":
-        target = "aarch64-apple-darwin" if "arm" in arch or "aarch" in arch else "x86_64-apple-darwin"
-    elif system == "linux":
-        target = "x86_64-unknown-linux-musl"
-    else:
-        return False, f"Sistema {system} nao suportado para download automatico"
-
-    url = f"https://github.com/rcastrodigital/rtk/releases/latest/download/rtk-{target}"
-    dest = Path.home() / ".local" / "bin" / "rtk"
-    dest.parent.mkdir(parents=True, exist_ok=True)
-
-    print(f"  Baixando binario RTK para {target}...")
+def is_real_rtk():
+    """Valida empiricamente que o binario `rtk` no PATH e o token optimizer
+    (e nao outro pacote homonimo). `rtk gain` imprime a assinatura
+    'RTK Token Savings'. Se nao bater, tratamos como RTK errado/ausente."""
+    if not is_rtk_installed():
+        return False
     try:
-        urllib.request.urlretrieve(url, str(dest))
-        dest.chmod(0o755)
-        return True, str(dest)
+        result = subprocess.run(
+            ["rtk", "gain"], capture_output=True, text=True, timeout=15
+        )
+    except Exception:
+        return False
+    blob = (result.stdout + result.stderr).lower()
+    return "token savings" in blob or "rtk" in blob and "savings" in blob
+
+
+def install_rtk_brew():
+    """Instala o RTK via Homebrew (unico caminho correto)."""
+    if shutil.which("brew") is None:
+        return False, "Homebrew (brew) nao encontrado"
+    print("  Instalando RTK via Homebrew (pode demorar alguns minutos)...")
+    try:
+        result = subprocess.run(
+            ["brew", "install", "rtk"],
+            capture_output=True, text=True, timeout=600
+        )
     except Exception as exc:
         return False, str(exc)
+    if result.returncode == 0:
+        return True, "instalado via brew"
+    return False, (result.stderr or result.stdout)[:200]
 
 
 def install_hook():
-    """Instala o hook RTK no settings.json do Claude Code."""
-    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Deixa o proprio RTK instalar o hook do Claude Code via `rtk init`.
 
-    if SETTINGS_PATH.exists():
-        try:
-            settings = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            settings = {}
-    else:
-        settings = {}
-
-    hooks = settings.setdefault("hooks", {})
-    pre_tool = hooks.setdefault("PreToolUse", [])
-
-    # Verifica se hook ja existe
-    for hook in pre_tool:
-        if isinstance(hook, dict) and "rtk" in str(hook.get("command", "")):
-            return True, "Hook RTK ja instalado"
-
-    pre_tool.append({
-        "matcher": "Bash",
-        "hooks": [{
-            "type": "command",
-            "command": "rtk filter"
-        }]
-    })
-
-    SETTINGS_PATH.write_text(json.dumps(settings, ensure_ascii=False, indent=2), encoding="utf-8")
-    return True, "Hook instalado em ~/.claude/settings.json"
+    `rtk init --global` grava o hook correto em ~/.claude/settings.json
+    sozinho — nao montamos o hook na mao (o subcomando `rtk filter` nao
+    existe e quebraria todo Bash do Claude Code)."""
+    if not is_real_rtk():
+        return False, "RTK valido nao detectado — hook nao instalado"
+    try:
+        result = subprocess.run(
+            ["rtk", "init", "--global"],
+            capture_output=True, text=True, timeout=60
+        )
+    except Exception as exc:
+        return False, str(exc)
+    if result.returncode == 0:
+        return True, "Hook instalado via `rtk init` em ~/.claude/settings.json"
+    return False, (result.stderr or result.stdout or "rtk init falhou")[:200]
 
 
 def show_gain():
@@ -113,52 +98,48 @@ def show_gain():
 def main():
     print()
     print("Etapa 2 — RTK + Hooks")
-    print("[██░░░░░░░] Etapa 2 de 8")
+    print("[██░░░░░░░] Etapa 2 de 9")
     print()
     print("  O RTK e um otimizador de tokens que reduz em 60-90% o custo")
     print("  das suas sessoes no Claude Code — filtrando saidas de comandos")
     print("  antes de chegarem ao contexto da IA.")
     print()
 
-    # 1. Verificar se ja esta instalado
-    if is_rtk_installed():
+    # 1. Verificar se ja esta instalado (e se e o RTK correto)
+    if is_real_rtk():
         print("  ✅ RTK ja instalado!")
         show_gain()
     else:
-        print("  RTK nao encontrado. Tentando instalar...")
-        print()
-
-        # Tenta cargo primeiro
-        cargo_ok = shutil.which("cargo") is not None
-        installed = False
-
-        if cargo_ok:
-            ok, detail = install_rtk_cargo()
-            if ok:
-                print("  ✅ RTK instalado via cargo!")
-                installed = True
-            else:
-                print(f"  ⚠️  cargo falhou: {detail[:100]}")
-
-        if not installed:
-            ok, detail = install_rtk_binary()
-            if ok:
-                print(f"  ✅ RTK instalado em {detail}")
-                installed = True
-            else:
-                print(f"  ⚠️  Download falhou: {detail}")
-                print()
-                print("  Instale manualmente: https://github.com/rcastrodigital/rtk")
-                print("  Depois rode: python3 setup/setup_rtk.py")
-
-        if not installed:
-            mark_checkpoint("step_2_rtk", "skipped", "RTK nao instalado — instalacao manual necessaria")
+        if is_rtk_installed():
+            print("  ⚠️  Existe um binario `rtk` no PATH, mas nao e o otimizador")
+            print("     de tokens (provavelmente um pacote homonimo).")
+            print("     Instale o RTK correto com: brew install rtk")
             print()
-            print("  Etapa pulada — RTK pode ser instalado depois.")
+        else:
+            print("  RTK nao encontrado. Tentando instalar via Homebrew...")
+            print()
+
+        ok, detail = install_rtk_brew()
+        if ok and is_real_rtk():
+            print("  ✅ RTK instalado via Homebrew!")
+        else:
+            if not ok:
+                print(f"  ⚠️  Nao foi possivel instalar automaticamente: {detail}")
+            print()
+            print("  Para instalar o RTK manualmente:")
+            print("    1. Instale o Homebrew (se ainda nao tiver):")
+            print('       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
+            print("    2. Instale o RTK:")
+            print("       brew install rtk")
+            print(f"    Documentacao oficial: {RTK_HOMEPAGE}")
+            print("    Depois rode de novo: python3 setup/setup_rtk.py")
+            print()
+            mark_checkpoint("step_2_rtk", "skipped", "RTK nao instalado — instalacao manual necessaria")
+            print("  Etapa pulada — RTK pode ser instalado depois. Seguindo em frente.")
             print()
             return
 
-    # 2. Instalar hook
+    # 2. Instalar hook (via rtk init — o proprio RTK grava o hook correto)
     print()
     print("  Configurando hook no Claude Code...")
     ok, msg = install_hook()
@@ -166,6 +147,7 @@ def main():
         print(f"  ✅ {msg}")
     else:
         print(f"  ⚠️  {msg}")
+        print("     Voce pode configurar depois com: rtk init --global")
 
     mark_checkpoint("step_2_rtk", "done", "RTK instalado + hook configurado")
 

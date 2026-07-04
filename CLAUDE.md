@@ -122,8 +122,8 @@ Execute: `python3 setup/setup_rtk.py`
 
 O script vai:
 - Verificar se o RTK já está instalado
-- Se não estiver: instalar via `cargo install rtk` (ou baixar binário pré-compilado)
-- Instalar o hook em `~/.claude/settings.json`
+- Se não estiver: instalar via `brew install rtk` (Homebrew — único caminho correto; nunca `cargo`)
+- Instalar o hook em `~/.claude/settings.json` (o próprio RTK grava via `rtk init --global`)
 - Mostrar a economia acumulada com `rtk gain`
 
 Se o RTK já estava instalado:

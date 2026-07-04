@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS contacts (
   updated_at timestamptz DEFAULT now()
 );
 
+ALTER TABLE contacts ALTER COLUMN status SET DEFAULT 'new';
+UPDATE contacts SET status = 'new' WHERE status = 'active';
+
 CREATE TABLE IF NOT EXISTS dispatches (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   contact_phone text NOT NULL,
