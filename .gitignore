@@ -10,3 +10,7 @@ node_modules/
 dist/
 crm/config.js
 graphify-out/
+
+# docs internos ZX LAB (auto-gerados) — nao vao pro clone do aluno
+HISTORICO-SESSOES.md
+MAPA-PROJETO.md
