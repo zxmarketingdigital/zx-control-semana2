@@ -20,7 +20,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from lib import (
     BASE_DIR, DATA_DIR, HEARTBEAT_DIR, SCRIPTS_DIR,
     ensure_structure, latest_heartbeat_snapshot,
-    load_config, mark_checkpoint, now_iso,
+    ConfigBackupError, load_config, mark_checkpoint, now_iso,
 )
 
 
@@ -58,8 +58,17 @@ def _cfg(config, *keys, default=""):
 # Checks
 # ---------------------------------------------------------------------------
 
+def _evolution_configurada(config):
+    """True se o WhatsApp (Evolution) foi configurado neste config."""
+    nested = config.get("evolution") if isinstance(config.get("evolution"), dict) else {}
+    return bool(config.get("evolution_api_url") or nested.get("base_url"))
+
+
 def check_evolution_api(config):
     """Verifica se a Evolution API esta respondendo."""
+    # Recurso opcional: so monitora se o WhatsApp (Evolution) ja foi configurado.
+    if not _evolution_configurada(config):
+        return True, "Evolution API nao configurada — monitoramento de WhatsApp ignorado"
     base_url = _cfg(config, "evolution", "base_url", default="http://localhost:8080")
     try:
         req = urllib.request.Request(f"{base_url}/instance/fetchInstances",
@@ -75,7 +84,10 @@ def check_dispatcher(config):
     dispatcher = SCRIPTS_DIR / "dispatcher.py"
     if dispatcher.exists():
         return True, "dispatcher.py encontrado"
-    return False, "dispatcher.py nao encontrado em ~/.operacao-ia/scripts/"
+    # Recurso opcional: so e falha se o WhatsApp (Evolution) esta configurado e o dispatcher sumiu.
+    if _evolution_configurada(config):
+        return False, "dispatcher.py nao encontrado em ~/.operacao-ia/scripts/ (WhatsApp configurado)"
+    return True, "dispatcher.py nao instalado — monitoramento ignorado"
 
 
 def check_monitor_launchagent():
@@ -88,7 +100,13 @@ def check_monitor_launchagent():
         )
         if result.returncode == 0:
             return True, f"LaunchAgent {label} ativo"
-        return False, f"LaunchAgent {label} nao encontrado"
+        # Recurso opcional: so e falha se o plist existe (instalado) e o agente nao esta carregado.
+        plist = Path.home() / "Library" / "LaunchAgents" / f"{label}.plist"
+        if plist.exists():
+            return False, f"LaunchAgent {label} instalado mas nao carregado"
+        return True, f"LaunchAgent {label} nao instalado — monitoramento ignorado"
+    except FileNotFoundError:
+        return True, "launchctl indisponivel neste sistema — monitoramento ignorado"
     except Exception as exc:
         return False, f"Erro ao verificar LaunchAgent: {exc}"
 
@@ -280,11 +298,11 @@ def main():
     )
     args = parser.parse_args()
 
+    # load_config cria um config minimo se faltar e faz backup se estiver corrompido.
     try:
         config = load_config()
-    except FileNotFoundError:
-        print("  [guardian] config.json nao encontrado — execute a Etapa 0 primeiro.")
-        sys.exit(1)
+    except ConfigBackupError:
+        sys.exit(1)  # mensagem ja impressa; config original intacto
 
     created = []
     if args.layer in {"watchdog", "all"}:

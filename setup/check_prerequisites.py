@@ -8,8 +8,8 @@ E idempotente — pode rodar quantas vezes quiser.
 Quem prepara a estrutura de fato e a Etapa 0 (`setup/setup_base.py`); este
 arquivo e o atalho pra saber, antes de comecar, se falta alguma coisa.
 
-A deteccao da Semana 1 e importada de setup_base.py (fonte unica), pros dois
-nunca divergirem.
+Nao exige nenhum setup anterior: a deteccao de uma instalacao existente e so
+informativa e vem de setup_base.py (fonte unica), pros dois nunca divergirem.
 
 Compativel com Python 3.9 na leitura do arquivo (o setup em si pede 3.10+).
 """
@@ -23,7 +23,7 @@ from typing import List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 try:
-    from setup_base import detect_semana1
+    from setup_base import detect_instalacao_anterior
 except ImportError as e:  # pragma: no cover - so acontece em repo incompleto
     print("Nao consegui carregar setup/setup_base.py: {}".format(e))
     print("Confirme que voce clonou o repositorio inteiro e tente de novo.")
@@ -62,14 +62,14 @@ def checar_opcional(nome: str, rotulo: str, dica: str) -> None:
         print("      " + dica)
 
 
-def checar_semana1() -> None:
-    ok, info = detect_semana1()
+def checar_instalacao_anterior() -> None:
+    """Informativo: nao exige nenhum setup anterior e nunca bloqueia."""
+    ok, info = detect_instalacao_anterior()
     if ok:
-        print("  ✅ Semana 1 concluida (aluno: {})".format(info))
+        print("  ✅ Instalacao existente encontrada (aluno: {}) — vou aproveitar o que for valido".format(info))
     else:
-        print("  ⚠️  Semana 1 nao detectada ({})".format(info))
-        print("      Da pra continuar mesmo assim — algumas etapas se adaptam.")
-    # Nunca bloqueia — mesmo criterio da Etapa 0.
+        print("  ℹ️  Nenhuma instalacao anterior com dados do aluno ({}).".format(info))
+        print("      Sem problema: a Etapa 0 cria a base do zero.")
 
 
 def main() -> int:
@@ -89,7 +89,7 @@ def main() -> int:
                     "Precisa dele na Etapa 7. Instale: npm install -g wrangler")
     checar_opcional("brew", "Homebrew",
                     "Usado na Etapa 2 pra instalar o RTK. Instale: https://brew.sh")
-    checar_semana1()
+    checar_instalacao_anterior()
 
     faltando = [rotulo for rotulo, ok in bloqueantes if not ok]
 

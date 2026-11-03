@@ -12,7 +12,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 sys.path.insert(0, str(ROOT_DIR / "scripts"))
 
-from lib import load_checkpoint, load_config, mark_checkpoint, save_config
+from lib import bump_phase, load_checkpoint, load_config, mark_checkpoint, save_config
 
 
 def status_label(steps, key):
@@ -37,10 +37,7 @@ def main():
     print("  Vamos revisar tudo que foi instalado e atualizar seu painel.")
     print()
 
-    try:
-        config = load_config()
-    except FileNotFoundError:
-        config = {}
+    config = load_config()
 
     checkpoint = load_checkpoint()
     steps = checkpoint.get("steps", {})
@@ -83,6 +80,8 @@ def main():
 
     config.setdefault("week2", {})["completed"] = completed
     config["week2"]["completed_at"] = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+    if completed:
+        bump_phase(config, 2)  # nunca regride: quem ja tem fase maior continua com ela
     save_config(config)
 
     if completed:

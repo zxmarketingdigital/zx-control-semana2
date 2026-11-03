@@ -2,8 +2,10 @@
 
 ## O que e a Semana 2
 
-A Semana 2 transforma a fundacao criada na Semana 1 em uma **operacao profissional**:
+A Semana 2 transforma a sua operacao em uma **operacao profissional**:
 econômica em tokens, monitorada 24/7 e com dados na nuvem.
+
+Não exige setup anterior — se você já tem outro setup instalado, ele aproveita o que estiver válido.
 
 ## O que voce tem apos a Semana 2
 

@@ -38,7 +38,10 @@ pgrep -f "guardian.py" && echo "guardian rodando" || echo "guardian nao em execu
 
 ### 5. Config.json existe e tem campos minimos
 ```bash
-cat ~/.operacao-ia/config/config.json 2>/dev/null | python3 -c "import sys,json; c=json.load(sys.stdin); print('OK' if c.get('student_name') else 'FALTANDO campos')"
+python3 -c "import json,pathlib; p=pathlib.Path.home()/'.operacao-ia/config/config.json'
+try: c=json.loads(p.read_text(encoding='utf-8')); print('OK' if isinstance(c, dict) else 'AVISO: config invalido (nao e um objeto JSON)')
+except FileNotFoundError: print('AVISO: config.json ainda nao existe (e criado na Etapa 0)')
+except (OSError, ValueError): print('AVISO: config.json ilegivel ou invalido (a Etapa 0 guarda uma copia e recria)')"
 ```
 
 ## Formato de saida

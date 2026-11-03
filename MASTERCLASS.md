@@ -5,7 +5,7 @@
 
 ## Promessa da aula
 
-Sair de uma operação básica (Semana 1) para uma **operação profissional**: mais
+Sair de uma operação básica para uma **operação profissional**: mais
 barata de rodar, monitorada sozinha e com os dados na nuvem, acessíveis de
 qualquer lugar.
 
@@ -16,7 +16,7 @@ vigiando 24/7, banco na nuvem e o próprio Mini-CRM publicado.
 
 | # | Bloco | Tempo | Vídeo |
 |---|-------|-------|-------|
-| 1 | Hook + o que muda da Semana 1 pra 2 | 00:00 — 00:04 | `BUNNY_GUID_S2_1` |
+| 1 | Hook + o que muda de uma operação básica pra profissional | 00:00 — 00:04 | `BUNNY_GUID_S2_1` |
 | 2 | Mission Control + RTK (o painel e a economia) | 00:04 — 00:16 | `BUNNY_GUID_S2_2` |
 | 3 | Skills + Guardião (a operação que se cuida sozinha) | 00:16 — 00:30 | `BUNNY_GUID_S2_3` |
 | 4 | Supabase + contatos + Mini-CRM no ar | 00:30 — 00:46 | `BUNNY_GUID_S2_4` |
@@ -26,7 +26,7 @@ vigiando 24/7, banco na nuvem e o próprio Mini-CRM publicado.
 
 ### 1. Abertura (hook)
 
-Abrir pela dor concreta: a operação da Semana 1 funciona, mas ela é **cara de
+Abrir pela dor concreta: uma operação básica funciona, mas ela é **cara de
 rodar, cega e local**. Cara porque cada sessão queima token à toa. Cega porque
 quando algo cai, ninguém avisa — o aluno descobre pelo cliente. Local porque os
 contatos estão presos numa máquina só.
@@ -66,7 +66,7 @@ Bloco mais longo e o mais delicado — envolve criar conta em dois serviços.
 **Supabase (Etapa 5)** — enquadrar como "uma planilha na nuvem, só que rápida e
 segura". Mostrar onde pegar as credenciais e rodar o SQL de criação das tabelas.
 
-**Contatos (Etapa 6)** — mostrar a migração do que já existe da Semana 1. Se o
+**Contatos (Etapa 6)** — mostrar a migração de uma lista que o aluno já tenha (banco local, planilha ou CSV). Se o
 aluno não tiver lista, mostrar o caminho de importar depois — ninguém trava aqui.
 
 **Mini-CRM (Etapa 7)** — o clímax da aula: a URL publicada abrindo no browser,

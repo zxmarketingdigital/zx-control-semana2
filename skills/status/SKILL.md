@@ -55,7 +55,8 @@ Tudo OK.
 ## Regras
 
 - Leia o config.json em `~/.operacao-ia/config/config.json`
-- Se config.json nao existir, informe que a Semana 1 ou 2 precisa ser executada
+- Se config.json nao existir, informe que a base ainda nao foi criada e rode `python3 ~/zx-control-semana2/setup/setup_base.py` (cria o minimo, nao exige nenhum setup anterior)
+- Recurso nao configurado (WhatsApp, Supabase, contatos) aparece como "nao configurado" (AVISO), nunca como erro
 - Nunca mostre API keys completas — mostre apenas os primeiros 8 caracteres
 - Se algo falhar, sugira o comando correto para corrigir
 - Execute os checks em sequencia e mostre o relatorio completo no final

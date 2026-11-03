@@ -1,7 +1,7 @@
 # ZX Control — Semana 2: Operação Profissional
 
 > Repositório exclusivo para alunos do ZX Control.
-> Pré-requisito: Semana 1 concluída.
+> Não exige setup anterior — se você já tem outro setup instalado, ele aproveita o que estiver válido.
 > Ao final desta sessão você terá RTK, 7 skills, Guardião 24/7, Supabase na nuvem e Mini-CRM publicado — sem digitar um único comando.
 
 ---
@@ -56,7 +56,6 @@ O Claude lê as instruções e conduz você por tudo — sem precisar digitar ma
 | Python | 3.9+ | Scripts de setup |
 | Node.js | 18+ | wrangler (deploy CRM) |
 | Git | qualquer recente | Clonar o repositório |
-| Semana 1 concluída | — | Base da operação (WhatsApp + email) |
 | Conta Supabase | gratuita | Banco de dados na nuvem |
 | Conta Cloudflare | gratuita | Deploy do CRM |
 
@@ -69,13 +68,13 @@ O Claude lê as instruções e conduz você por tudo — sem precisar digitar ma
 
 | # | Etapa | O que instala |
 |---|-------|--------------|
-| 0 | Boas-vindas + Base | Estrutura de pastas, verificação Semana 1 |
+| 0 | Boas-vindas + Base | Estrutura de pastas e configuração base |
 | 1 | Mission Control | Painel visual HTML no browser |
 | 2 | RTK + Hooks | Otimizador de tokens no Claude Code |
 | 3 | Skills Profissionais | 7 skills em `~/.claude/skills/` |
 | 4 | Guardião + Heartbeat | 3 LaunchAgents de monitoramento |
 | 5 | Supabase | Banco de dados na nuvem |
-| 6 | Importar Contatos | Migração da Semana 1 ou importação manual |
+| 6 | Importar Contatos | Migração de um banco de contatos existente ou importação manual |
 | 7 | Mini-CRM Cloudflare | Interface web publicada |
 | 8 | Finalização | Resumo + Mission Control completo |
 
@@ -130,7 +129,7 @@ zx-control-semana2/
 ## O Guardian — Monitoramento em 3 Camadas
 
 ```
-Watchdog  (5min)   → verifica diretamente: Evolution API, dispatcher, contacts.db
+Watchdog  (5min)   → verifica diretamente: Evolution API, dispatcher, contacts.db (itens ainda não configurados são ignorados)
 Heartbeat (10min)  → verifica: watchdog está ativo e recente?
 Last Resort(20min) → verifica: heartbeat está ok? Alerta crítico se não
 ```
@@ -139,17 +138,9 @@ Se algo falhar, você recebe um aviso no WhatsApp automaticamente.
 
 ---
 
-## Semana 1
+## Outros setups
 
-Se você ainda não fez a Semana 1:
-
-```bash
-gh repo clone zxmarketingdigital/zx-control-semana1 ~/zx-control-semana1
-cd ~/zx-control-semana1
-claude
-```
-
-A Semana 1 configura WhatsApp, Email, Agente IA e Monitor — a fundação que a Semana 2 potencializa.
+Este setup funciona sozinho. Se você já instalou outro setup do ZX Control (por exemplo, o que configura WhatsApp, e-mail, agente IA e monitor), ele reaproveita o que estiver válido: nada é apagado nem reinstalado. Sem WhatsApp configurado, o Guardião segue monitorando o resto e só deixa de enviar alertas por WhatsApp.
 
 ---
 

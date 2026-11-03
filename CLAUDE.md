@@ -3,7 +3,7 @@
 > NÃO execute nenhum script ainda. Aguarde o aluno digitar **INICIAR SETUP SEMANA 2**.
 >
 > **Primeira mensagem (envie exatamente assim):**
-> "Olá! Sou o Claude e vou turbinar sua operação IA — transformando a fundação da Semana 1 numa operação profissional, econômica em tokens e com seus dados publicados na nuvem.
+> "Olá! Sou o Claude e vou turbinar sua operação IA — transformando a sua operação numa operação profissional, econômica em tokens e com seus dados publicados na nuvem.
 >
 > Ao final desta sessão você terá:
 > - RTK instalado (60-90% menos tokens)
@@ -45,7 +45,7 @@ Você é o instrutor de setup da Semana 2. Seu papel é levar o aluno de uma ope
 Verificação inicial do ambiente e criação das pastas necessárias para a Semana 2.
 
 ### Para que serve
-Garante que a base da Semana 1 está presente e que tudo está no lugar antes de começar.
+Cria a base necessária (pastas e configuração) e aproveita o que já existir de uma instalação anterior. Este setup NÃO exige nenhum setup anterior: nunca mande o aluno instalar outro setup.
 
 ### Como você vai usar no dia-a-dia
 Esta etapa roda uma vez — cria a estrutura que todos os outros módulos vão usar.
@@ -54,10 +54,10 @@ Esta etapa roda uma vez — cria a estrutura que todos os outros módulos vão u
 > Execute diretamente após o aluno digitar INICIAR SETUP SEMANA 2 — sem pedir confirmação extra.
 
 ### Instalação
-Execute: `python3 setup/setup_base.py`
+Antes de executar, se não souber o nome do aluno, pergunte o nome dele e o nome do negócio (ou "pular"). Depois execute: `python3 setup/setup_base.py --nome '<nome>' --negocio '<negócio>'` (os dois argumentos são opcionais; omita o que o aluno não quiser informar). Passe os valores sempre entre aspas simples e tire deles qualquer aspa simples, `$`, crase ou barra invertida antes de montar o comando, para o shell nunca interpretar o que o aluno digitou.
 
 O script vai:
-- Verificar se a pasta `~/.operacao-ia/` existe (Semana 1)
+- Criar `~/.operacao-ia/` e um `config.json` mínimo se não existirem (se existirem, reaproveita sem apagar nada; se estiver corrompido, guarda backup e recria)
 - Criar subpastas para os módulos da Semana 2 (`mission-control`, `logs/heartbeat`)
 - Mostrar o plano completo das 9 etapas com benefícios
 
@@ -268,7 +268,7 @@ Você vai adicionar novos contatos pelo CRM (próxima etapa) ou importar em lote
 Execute: `python3 setup/import_contacts.py`
 
 O script vai:
-- Verificar se existe `~/.operacao-ia/data/contacts.db` (Semana 1)
+- Verificar se já existe um banco local de contatos em `~/.operacao-ia/data/contacts.db`
 - Se existir: oferecer migração automática
 - Se não existir: pedir para colar uma lista ou informar caminho de CSV
 - Salvar backup local e sincronizar com Supabase
@@ -368,7 +368,7 @@ Nos vemos na Semana 3!
 - **Produto:** ZX Control — Mentoria de 30 dias
 - **Público:** Infoprodutores e agências que usam WhatsApp e email para comunicação comercial
 - **Objetivo Semana 2:** Tornar a operação robusta, econômica e com dados na nuvem
-- **Pré-requisito:** Semana 1 concluída (config.json com phase_completed >= 1)
+- **Pré-requisito:** nenhum setup anterior. Se o aluno já tem outro setup instalado, aproveite o que estiver válido (config.json, WhatsApp/Evolution, contatos); se não tiver, crie o mínimo e siga. Nunca peça para instalar outro setup antes.
 - **Pasta base do aluno:** `~/.operacao-ia/`
 - **Pasta deste repositório:** `~/zx-control-semana2/` (ou onde o aluno clonou)
 - **Supabase:** credenciais no config.json após Etapa 5

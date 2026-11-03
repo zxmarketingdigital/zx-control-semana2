@@ -21,9 +21,18 @@ which rtk && echo "RTK: OK" || echo "RTK: AUSENTE"
 python3 - <<'EOF'
 import json, urllib.request
 from pathlib import Path
-cfg = json.loads((Path.home()/".operacao-ia/config/config.json").read_text())
-url = cfg.get("evolution_api_url","http://localhost:8080")
-key = cfg.get("evolution_api_key","")
+try:
+    cfg = json.loads((Path.home()/".operacao-ia/config/config.json").read_text())
+    if not isinstance(cfg, dict):
+        cfg = {}
+except (OSError, ValueError):
+    cfg = {}  # config ausente ou invalido: check informativo, nunca erro
+evo = cfg.get("evolution") if isinstance(cfg.get("evolution"), dict) else {}
+url = evo.get("base_url") or cfg.get("evolution_api_url","")
+key = evo.get("api_key") or cfg.get("evolution_api_key","")
+if not url:
+    print("Evolution API: nao configurada (opcional)")
+    raise SystemExit(0)
 try:
     req = urllib.request.Request(f"{url}/instance/fetchInstances", headers={"apikey": key})
     with urllib.request.urlopen(req, timeout=5) as r:
@@ -38,7 +47,12 @@ EOF
 python3 - <<'EOF'
 import json, urllib.request
 from pathlib import Path
-cfg = json.loads((Path.home()/".operacao-ia/config/config.json").read_text())
+try:
+    cfg = json.loads((Path.home()/".operacao-ia/config/config.json").read_text())
+    if not isinstance(cfg, dict):
+        cfg = {}
+except (OSError, ValueError):
+    cfg = {}  # config ausente ou invalido: check informativo, nunca erro
 url = cfg.get("supabase_url","")
 key = cfg.get("supabase_anon_key","")
 if not url:
