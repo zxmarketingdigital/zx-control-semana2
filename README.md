@@ -12,7 +12,7 @@ Antes de começar, você vai precisar de:
 
 - **Claude Code** instalado ([instalação](https://docs.anthropic.com/pt/))
 - **Python 3.10+** (`python3 --version`)
-- **Node.js + wrangler** — `npm install -g wrangler && wrangler login`
+- **Node.js + wrangler** — `npm install -g wrangler` e depois `wrangler login`
 - **Conta Supabase** (gratuita) — obtenha URL + anon key em: Settings → API
 - **Conta Cloudflare** (gratuita) — obtenha Account ID + API Token em: My Profile → API Tokens
 
@@ -169,7 +169,7 @@ Acesse o grupo do ZX Control ou abra uma issue neste repositório.
 **Fix:** Crie manualmente em Cloudflare Dashboard → Workers & Pages → Create, ou rode `setup_crm.py` pela primeira vez sem `--reconfigure`.
 
 ### wrangler: command not found
-**Fix:** `npm install -g wrangler && wrangler login`
+**Fix:** `npm install -g wrangler` e depois `wrangler login`
 
 ### Setup pede credenciais mesmo já configuradas
 **Fix normal:** O setup detecta automaticamente. Se quiser forçar reconfiguração: `python3 setup/setup_crm.py --reconfigure`
